@@ -15,6 +15,7 @@
 #define RESET "\x1b[0m"
 
 char number[12];
+int num_size = 0;
 
 void check_balance()
 {
@@ -33,6 +34,13 @@ void recharge()
     {
         printf("Please enter your number: ");
         scanf("%11s", number);
+        for (int i = 0; number[i] != '\0'; i++)
+            num_size++;
+        if (num_size <= 11 && number[0] != '0' && number[1] != '1')
+        {
+            printf(RED "Please enter a valid number\n" RESET);
+            return;
+        }
 
         FILE *blocked_num = fopen("blocked_numbers/numbers.txt", "a+");
         char num[32];

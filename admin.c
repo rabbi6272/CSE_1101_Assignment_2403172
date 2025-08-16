@@ -197,11 +197,20 @@ void history()
     }
     fclose(history);
 }
+
 void search()
 {
     char number[12];
-    printf("Enter mobile number: ");
+    int num_size = 0;
+    printf("Please enter your number: ");
     scanf("%11s", number);
+    for (int i = 1; number[i] != '\0'; i++)
+        num_size = i + 1;
+    if (num_size != 11 || number[0] != '0' || number[1] != '1')
+    {
+        printf(RED "Please enter a valid number\n" RESET);
+        return;
+    }
     printf("\nCard NO\t\t     Date\tTime  \n");
 
     FILE *history = fopen("admin/history.txt", "r");
@@ -227,6 +236,8 @@ void search()
 
 int main()
 {
+    char number[12];
+    int num_size = 0;
     int t = 1;
     while (t)
     {
@@ -247,10 +258,16 @@ int main()
             delete_card();
             break;
         case 3:
-            char number[12];
-            printf("Enter the number you want to unblock: ");
+            printf("Please enter your number: ");
             scanf("%11s", number);
-            unblock_number(number);
+            for (int i = 1; number[i] != '\0'; i++)
+                num_size = i + 1;
+
+            if (num_size == 11 && number[0] == '0' && number[1] == '1')
+                unblock_number(number);
+            else
+                printf(RED "Please enter a valid number\n" RESET);
+
             break;
         case 4:
             history();

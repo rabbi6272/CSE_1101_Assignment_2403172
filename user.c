@@ -14,9 +14,6 @@
 #define CYAN "\x1b[36m"
 #define RESET "\x1b[0m"
 
-char number[12];
-int num_size = 0;
-
 void check_balance()
 {
     FILE *balance = fopen("user/balance.txt", "r+");
@@ -29,6 +26,8 @@ void check_balance()
 void recharge()
 {
     static int not_found = 0;
+    char number[12];
+    int num_size = 0;
 
     if (not_found != 3)
     {
@@ -36,7 +35,7 @@ void recharge()
         scanf("%11s", number);
         for (int i = 0; number[i] != '\0'; i++)
             num_size++;
-        if (num_size <= 11 && number[0] != '0' && number[1] != '1')
+        if (num_size < 11 || number[0] != '0' || number[1] != '1')
         {
             printf(RED "Please enter a valid number\n" RESET);
             return;

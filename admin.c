@@ -13,6 +13,7 @@
 #define CYAN "\x1b[36m"
 #define RESET "\x1b[0m"
 
+
 void generate_crads(int count, int minute)
 {
     FILE *fptr;

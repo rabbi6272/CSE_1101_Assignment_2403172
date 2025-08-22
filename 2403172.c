@@ -372,13 +372,25 @@ int Admin()
 // admin section ends here
 
 // user section starts here
-void check_balance()
+int check_balance(char u_number[])
 {
-    FILE *balance = fopen("user/balance.txt", "r+");
+    FILE *balance = fopen("user/balances.txt", "r+");
     int b = 0;
-    fscanf(balance, "%d", &b);
+    char num[12];
+    char bal[32];
+    while (fgets(bal, sizeof(bal), balance))
+    {
+        bal[strcspn(bal, "\n")] = 0;
+        sscanf(bal, "%s %d", num, &b);
+        if (strcmp(num, u_number) == 0)
+        {
+            // found the user number
+            return b;
+            break;
+        }
+    }
     fclose(balance);
-    printf("You have %d minutes in your account.\n", b);
+    return 0;
 }
 
 void recharge(char u_number[])
@@ -469,15 +481,61 @@ void recharge(char u_number[])
             fclose(used_src);
 
             // adding the minutes in the user's balance
-            FILE *balance = fopen("user/balance.txt", "r+");
-            FILE *balance_tmp = fopen("user/balance_temp.txt", "w+");
-            int prev_balance = 0;
-            fscanf(balance, "%d", &prev_balance);
-            fprintf(balance_tmp, "%d", minute + prev_balance);
-            fclose(balance_tmp);
-            fclose(balance);
-            remove("user/balance.txt");
-            rename("user/balance_temp.txt", "user/balance.txt");
+            FILE *balance = fopen("user/balances.txt", "r");
+            FILE *balance_tmp = fopen("user/balances_temp.txt", "w");
+            char new_balance_str[32];
+            char balance_line[32];
+            char saved_num[12];
+            int prev_balance;
+            int found_user = 0;
+            if (balance && balance_tmp)
+            {
+                while (fgets(balance_line, sizeof(balance_line), balance))
+                {
+                    balance_line[strcspn(balance_line, "\n")] = 0;
+                    if (sscanf(balance_line, "%s %d", saved_num, &prev_balance) == 2)
+                    {
+                        if (strcmp(saved_num, u_number) == 0)
+                        {
+                            snprintf(new_balance_str, 32, "%s %d", u_number, minute + prev_balance);
+                            fputs(new_balance_str, balance_tmp);
+                            fputs("\n", balance_tmp);
+                            found_user = 1;
+                        }
+                        else
+                        {
+                            snprintf(new_balance_str, 32, "%s %d", saved_num, prev_balance);
+                            fputs(new_balance_str, balance_tmp);
+                            fputs("\n", balance_tmp);
+                        }
+                    }
+                }
+                // If user not found, add new entry
+                if (!found_user)
+                {
+                    snprintf(new_balance_str, 32, "%s %d", u_number, minute);
+                    fputs(new_balance_str, balance_tmp);
+                    fputs("\n", balance_tmp);
+                }
+                fclose(balance);
+                fclose(balance_tmp);
+                remove("user/balances.txt");
+                rename("user/balances_temp.txt", "user/balances.txt");
+            }
+            else
+            {
+                // If file open fails, create new balance file
+                if (balance_tmp)
+                {
+                    snprintf(new_balance_str, 32, "%s %d", u_number, minute);
+                    fputs(new_balance_str, balance_tmp);
+                    fputs("\n", balance_tmp);
+                    fclose(balance_tmp);
+                    rename("user/balances_temp.txt", "user/balances.txt");
+                }
+                if (balance)
+                    fclose(balance);
+            }
 
             // Get current date and time
             char date[15], time_str[15];
@@ -561,7 +619,7 @@ int User()
         switch (choice)
         {
         case 1:
-            check_balance();
+            printf("Your balance is: %d\n", check_balance(u_number));
             break;
         case 2:
             recharge(u_number);
